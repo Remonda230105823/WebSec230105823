@@ -14,3 +14,9 @@
     </div>
 </body>
 </html>
+<style>
+    .navbar-nav .nav-link {
+        font-weight: bold;
+    }
+</style>
+
