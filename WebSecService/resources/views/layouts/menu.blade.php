@@ -20,18 +20,38 @@
                 <a class="nav-link" href="{{ url('/transcript') }}">Transcript</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ url('/products') }}">Products</a>
-            </li>
-            <li class="nav-item">
                 <a class="nav-link" href="{{ url('/calculator') }}">Calculator</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="{{ url('/gpa_simulator') }}">GPA Simulator</a>
             </li>
             <li class="nav-item">
-                 <a class="nav-link" href="{{ url('/product-catalog') }}">Product Catalog</a>
+                <a class="nav-link" href="{{route('products_list')}}">Products</a>
             </li>
-
+            @can('show_users')
+            <li class="nav-item">
+                <a class="nav-link" href="{{route('users')}}">Users</a>
+            </li>
+            @endcan
+        </ul>
+        <ul class="navbar-nav">
+            @auth
+            <li class="nav-item">
+                <a class="nav-link" href="{{route('profile')}}">{{auth()->user()->name}}</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{route('do_logout')}}">Logout</a>
+            </li>
+            @else
+            <li class="nav-item">
+                <a class="nav-link" href="{{route('login')}}">Login</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{route('register')}}">Register</a>
+            </li>
+            <li class="nav-item">
+            @endauth
+            </li>
         </ul>
     </div>
 </nav>

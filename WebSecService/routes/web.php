@@ -1,6 +1,30 @@
 <?php
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Web\ProductsController;
+use App\Http\Controllers\Web\UsersController;
+
+Route::get('register', [UsersController::class, 'register'])->name('register');
+Route::post('register', [UsersController::class, 'doRegister'])->name('do_register');
+Route::get('login', [UsersController::class, 'login'])->name('login');
+Route::post('login', [UsersController::class, 'doLogin'])->name('do_login');
+Route::get('logout', [UsersController::class, 'doLogout'])->name('do_logout');
+Route::get('users', [UsersController::class, 'list'])->name('users');
+Route::get('profile/{user?}', [UsersController::class, 'profile'])->name('profile');
+Route::get('users/edit/{user?}', [UsersController::class, 'edit'])->name('users_edit');
+Route::post('users/save/{user}', [UsersController::class, 'save'])->name('users_save');
+Route::get('users/delete/{user}', [UsersController::class, 'delete'])->name('users_delete');
+Route::get('users/edit_password/{user?}', [UsersController::class, 'editPassword'])->name('edit_password');
+Route::post('users/save_password/{user}', [UsersController::class, 'savePassword'])->name('save_password');
+
+
+
+Route::get('products', [ProductsController::class, 'list'])->name('products_list');
+Route::get('products/edit/{product?}', [ProductsController::class, 'edit'])->name('products_edit');
+Route::post('products/save/{product?}', [ProductsController::class, 'save'])->name('products_save');
+Route::get('products/delete/{product}', [ProductsController::class, 'delete'])->name('products_delete');
+
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -44,30 +68,6 @@ Route::get('/transcript', function () {
     return view('transcript', ['transcript' => $transcript]);
 });
 
-Route::get('/products', function () {
-    $products = [
-        [
-            'name' => 'Laptop',
-            'image' => 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTZqQJRLgY5_ld2Uzk6zH7yQ-9wJiQpMTSQbA&s',
-            'price' => '$999',
-            'description' => 'A high-performance laptop with 16GB RAM and 512GB SSD.'
-        ],
-        [
-            'name' => 'Smartphone',
-            'image' => 'https://m.media-amazon.com/images/I/51Nnp56PlbL._AC_SL1001_.jpg',
-            'price' => '$699',
-            'description' => 'A powerful smartphone with an amazing camera and battery life.'
-        ],
-        [
-            'name' => 'Headphones',
-            'image' => 'https://images.philips.com/is/image/philipsconsumer/b8992131d5a3401e9d6eb0c300d8f4fe?$pnglarge$&wid=700&hei=700',
-            'price' => '$199',
-            'description' => 'Wireless noise-canceling headphones for an immersive experience.'
-        ],
-    ];
-    return view('products', ['products' => $products]);
-});
-
 Route::get('/calculator', function () {
     return view('calculator');
 });
@@ -82,29 +82,6 @@ Route::get('/gpa_simulator', function () {
     ];
     return view('gpa_simulator', ['courses' => $courses]);
 });
-
-Route::get('/product-catalog', function () {
-    $products = [
-        [
-            'name' => 'LG TV 50"',
-            'image' => 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSBn9aNIyombsgs60qE42IiL1mCGcS8hlG1_g&s', // Replace with actual image URL
-            'price' => 500,
-            'description' => 'A high-quality 50-inch LG TV with stunning display.',
-        ],
-        [
-            'name' => 'Toshiba Refrigerator 14"',
-            'image' => 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRD9uQarUrLMDHsKwaFh6jJXussOJhjM-nvsg&s', // Replace with actual image URL
-            'price' => 750,
-            'description' => 'A modern Toshiba refrigerator with spacious storage.',
-        ],
-    ];
-
-    return view('productCatalog', compact('products'));
-});
-
-
-
-
 
 
 
