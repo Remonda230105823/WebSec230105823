@@ -412,7 +412,7 @@ Route::post('users/save_password/{user}', [UsersController::class, 'savePassword
 
     Route::get('customers', [UsersController::class, 'listCustomers'])->name('customers');
 Route::post('users/charge_credit/{user}', [UsersController::class, 'chargeCredit'])->name('charge_credit');
-Route::post('users/give_a_gift/{user}', [UsersController::class, 'giveagift'])->name('give_a_gift');
+
 
     // Customer specific routes
     Route::get('products/buy/{product}', [ProductsController::class, 'buyProduct'])->name('buy_product');

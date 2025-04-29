@@ -19,9 +19,6 @@
         <div class="col col-sm-1">
             <button type="reset" class="btn btn-danger">Reset</button>
         </div>
-        <div class="col col-sm-1">
-            <button type="reset" class="btn btn-primary">GIFT</button>
-        </div>
     </div>
 </form>
 

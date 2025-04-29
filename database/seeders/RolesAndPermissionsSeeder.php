@@ -27,8 +27,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'delete_users',
             'admin_users',
             'charge_credit',
-            'buy_products',
-            'give_a_gift'
+            'buy_products'
         ];
 
         foreach ($permissions as $permissionName) {
@@ -50,16 +49,14 @@ class RolesAndPermissionsSeeder extends Seeder
             'show_products',
             'set_quantity',
             'show_users',
-            'charge_credit',
-            'give_a_gift'
+            'charge_credit'
         ]);
 
   
         $customerRole = Role::firstOrCreate(['name' => 'Customer']);
         $customerRole->givePermissionTo([
             'show_products',
-            'buy_products',
-            'take_a_gift'
+            'buy_products'
         ]);
     }
 }

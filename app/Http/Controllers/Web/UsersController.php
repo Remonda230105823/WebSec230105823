@@ -251,16 +251,5 @@ class UsersController extends Controller {
         
         return view('users.list_customers', compact('users'));
     }
-    public function giveagift(Request $request)
-    {
-        if(!auth()->user()->hasPermissionTo('give_a_gift')) abort(401);
-        
-        $query = User::role('employee')->select('*');
-        $query->when($request->keywords, 
-        fn($q)=> $q->where("name", "like", "%$request->keywords%"));
-        $users = $query->get();
-        
-        return view('users.list_customers', compact('users'));
-    }
 
 } 

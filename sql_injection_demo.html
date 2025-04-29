@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Injection Demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { padding: 20px; }
+        .container { max-width: 800px; }
+        pre { background-color: #f5f5f5; padding: 15px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">SQL Injection Demo</h1>
+        
+        <div class="card mb-4">
+            <div class="card-header bg-danger text-white">
+                <h3 class="mb-0">Important: Educational Purposes Only</h3>
+            </div>
+            <div class="card-body">
+                <p class="lead">This page demonstrates SQL injection vulnerabilities for educational purposes. Never use these techniques on systems without permission.</p>
+            </div>
+        </div>
+
+        <h2>Vulnerable Search Demo</h2>
+        <p>This form simulates the product search functionality on your site which might be vulnerable to SQL injection:</p>
+        
+        <div class="card mb-4">
+            <div class="card-body">
+                <form action="/products" method="get" id="searchForm">
+                    <div class="mb-3">
+                        <label for="keywords" class="form-label">Search Products:</label>
+                        <input type="text" class="form-control" id="keywords" name="keywords" placeholder="Enter product name">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </form>
+            </div>
+        </div>
+
+        <h2>SQL Injection Examples</h2>
+        <p>Try these inputs in the search form above:</p>
+
+        <div class="card mb-3">
+            <div class="card-header">Basic Injection: Display All Products</div>
+            <div class="card-body">
+                <pre>" OR "1"="1</pre>
+                <p>This input creates a condition that's always true, bypassing the search filter and showing all products.</p>
+                <p><strong>Result:</strong> If vulnerable, it would show all products regardless of the search term.</p>
+                <button class="btn btn-sm btn-secondary try-injection" data-value='" OR "1"="1'>Try This</button>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header">UNION Attack: Extracting User Information</div>
+            <div class="card-body">
+                <pre>" UNION SELECT id, email, password, name FROM users WHERE "1"="1</pre>
+                <p>This attack attempts to join the products table with the users table, potentially revealing user information.</p>
+                <p><strong>Result:</strong> If vulnerable, it might display user emails or password hashes alongside products.</p>
+                <button class="btn btn-sm btn-secondary try-injection" data-value='" UNION SELECT id, email, password, name FROM users WHERE "1"="1'>Try This</button>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header">Extracting Database Info</div>
+            <div class="card-body">
+                <pre>" UNION SELECT 1, database(), 3, version() FROM products WHERE "1"="1</pre>
+                <p>This tries to extract database name and version information.</p>
+                <p><strong>Result:</strong> If vulnerable, it might show database name and version in the product listing.</p>
+                <button class="btn btn-sm btn-secondary try-injection" data-value='" UNION SELECT 1, database(), 3, version() FROM products WHERE "1"="1'>Try This</button>
+            </div>
+        </div>
+
+        <h2>How to Fix SQL Injection</h2>
+        <div class="card mb-4">
+            <div class="card-body">
+                <p>To fix SQL injection vulnerabilities in your Laravel application:</p>
+                <ol>
+                    <li>Use Laravel's Query Builder with parameterized queries:
+                        <pre>DB::table('products')
+    ->where('name', 'like', '%' . $request->keywords . '%')
+    ->get();</pre>
+                    </li>
+                    <li>Use Eloquent's proper methods which automatically handle escaping:
+                        <pre>Product::where('name', 'like', '%' . $request->keywords . '%')->get();</pre>
+                    </li>
+                    <li>If using raw queries, use prepared statements with parameters:
+                        <pre>DB::select('SELECT * FROM products WHERE name LIKE ?', ['%' . $request->keywords . '%']);</pre>
+                    </li>
+                    <li>Validate and sanitize all user inputs</li>
+                </ol>
+                <p>Note that your application is likely already using these safe methods, as Laravel's Eloquent ORM protects against most SQL injection by default.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Script to prefill the form with example injections
+        document.querySelectorAll('.try-injection').forEach(button => {
+            button.addEventListener('click', function() {
+                document.getElementById('keywords').value = this.getAttribute('data-value');
+                // In a real demo, we wouldn't auto-submit to prevent accidental injection
+                // document.getElementById('searchForm').submit();
+            });
+        });
+    </script>
+</body>
+</html> 
