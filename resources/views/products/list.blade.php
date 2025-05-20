@@ -56,7 +56,13 @@
                 <div class="col col-sm-12 col-lg-8 mt-3">
                     <div class="row mb-2">
 					    <div class="col-8">
-					        <h3>{{$product->name}}</h3>
+					        <h3>{{$product->name}} 
+                            <button onclick="toggleFavorite(this, {{$product->id}})" 
+                                    class="btn btn-outline-warning btn-sm favorite-btn" 
+                                    id="fav-btn-{{$product->id}}">
+                                <i class="fas fa-heart"></i> <span>Favorite</span>
+                            </button>
+                        </h3>
 					    </div>
 					    <div class="col col-2">
                             @can('edit_products')
@@ -97,4 +103,42 @@
         </div>
     </div>
 @endforeach
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.favorite-btn').forEach(button => {
+        const productId = button.id.split('-')[2];
+        const isFavorited = localStorage.getItem('fav_' + productId) === 'true';
+        updateButtonState(button, isFavorited);
+    });
+});
+
+function toggleFavorite(button, productId) {
+    const isFavorited = localStorage.getItem('fav_' + productId) === 'true';
+    const newState = !isFavorited;
+    
+    localStorage.setItem('fav_' + productId, newState);
+    updateButtonState(button, newState);
+}
+
+function updateButtonState(button, isFavorited) {
+    const span = button.querySelector('span');
+    if (isFavorited) {
+        button.classList.remove('btn-outline-warning');
+        button.classList.add('btn-warning');
+        span.textContent = 'Unfavorite';
+    } else {
+        button.classList.remove('btn-warning');
+        button.classList.add('btn-outline-warning');
+        span.textContent = 'Favorite';
+    }
+}
+</script>
+@endpush
+
+@can('buy_products')
+<div data-can-buy-products style="display: none;"></div>
+@endcan
+
 @endsection

@@ -25,6 +25,13 @@
         <button type="submit" class="btn btn-primary">Login</button>
       </div>
     </form>
+    <hr>
+    <div class="text-center mt-3">
+        <p>Or login with:</p>
+        <a href="{{ url('auth/facebook') }}" class="btn btn-outline-primary m-1">Facebook</a>
+        <a href="{{ url('auth/microsoft') }}" class="btn btn-outline-secondary m-1">Microsoft</a>
+        <a href="{{ url('auth/linkedin') }}" class="btn btn-outline-info m-1">LinkedIn</a>
+    </div>
     </div>
   </div>
 </div>
